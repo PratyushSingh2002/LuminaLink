@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with the Model</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat-container {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            align-self: flex-end;
+            max-width: 70%;
+        }
+        .model-message {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            align-self: flex-start;
+            max-width: 70%;
+        }
+        #input-area {
+            display: flex;
+            margin-top: 10px;
+        }
+        #prompt {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+        #submit {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        #submit:hover {
+            background-color: #0056b3;
+        }
+        #logo {
+            display: block;
+            margin: auto;
+            max-width: 150px; /* Adjust as necessary */
+            margin-bottom: 20px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <img id="logo" src="/static/images/WhatsApp Image 2024-11-02 at 14.09.34.jpeg" alt="Logo">
+    <h1 style="text-align:center;">LuminaLink</h1>
+    <div id="chat-container"></div>
+    <div id="input-area">
+        <input type="text" id="prompt" placeholder="Type your message..." />
+        <button id="submit">
+            <i class="fas fa-paper-plane"></i> Send
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('submit').onclick = async () => {
+            const promptInput = document.getElementById('prompt');
+            const prompt = promptInput.value;
+            if (!prompt.trim()) return;  // Don't send empty messages
+            addMessage(prompt, 'user');
+            promptInput.value = ''; // Clear the input field
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+            
+            const responseElement = document.createElement('div');
+            responseElement.classList.add('model-message');
+            responseElement.innerText = 'Loading...';
+            chatContainer.appendChild(responseElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+
+            const res = await fetch('/interact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            responseElement.innerText = data.response || data.error;
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+        };
+
+        function addMessage(message, sender) {
+            const chatContainer = document.getElementById('chat-container');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(sender === 'user' ? 'user-message' : 'model-message');
+            messageElement.innerText = message;
+            chatContainer.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>
